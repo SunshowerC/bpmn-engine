@@ -1,0 +1,22 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "s": "ts-node --project tsconfig.json execute.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bent": "^7.3.12",
+    "bpmn-elements": "^8.1.0",
+    "bpmn-engine": "^15.0.0",
+    "camunda-bpmn-moddle": "^6.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.6.4",
+    "typescript": "^4.7.4"
+  }
+}
