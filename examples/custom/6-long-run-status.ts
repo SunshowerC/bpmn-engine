@@ -101,13 +101,13 @@
          },
          total: 100
        })
-     }, 6000000)
+     }, 60000 * 1000)
    })
  }
  
  const serviceMap = {
    "service1": doSomethingBiz,
-   "service2": (executionContext)=>{
+   "service2": async (executionContext)=>{
      const randomId = Math.random()
  
      return new Promise((resolve, reject)=>{
@@ -130,11 +130,17 @@
      saveToEnvironmentOutput(bpmnProcess, context) {
        const environment = (context as any)?.environment
  
- 
        bpmnProcess?.on('end', (api) => {
+        // console.log(`[end]name:${api.name},type:${api.type}`)
          const {name: eleName} = api.content
          environment.output[eleName || api.id] = api.content.output;
        });
+
+       bpmnProcess?.on('start', (api) => {
+        // console.log(`[start]name:${api.name},type:${api.type}`)
+        const {name: eleName} = api.content
+        // environment.output[eleName || api.id] = api.content.output;
+      });
      }
    }
  })
@@ -170,10 +176,30 @@ execResult.then((resul:BpmnEngineExecutionApi) => {
 setInterval(async ()=>{
   
   const state = await engine.getState()
-  const s2 = await engine.execution.getState()
+  // const s2 = await engine.execution.getState()
   // state === s2 等价
 
-  const s3 = await engine.getDefinitions()
+  const [definition] = await engine.getDefinitions()
+  
+  const processes = definition?.getProcesses();
+  const flows = processes?.[0]?.getSequenceFlows();
+  const activities = processes?.[0]?.getActivities();
+  const target = processes?.[0]?.getActivityById(flows[2].targetId);
+  const userTask = engine.execution.getPostponed() // 推迟执行的任务 user task
+  
+  const nodeState = activities.map(item => {
+    return {
+      source: item,
+      name: item.name,
+      type: item.type, // bpmn:ServiceTask
+      id: item.id, 
+      isEnd: item.isEnd, // 是否终点
+      isStart: item.isStart, // 是否是起点
+      isRunning: item.isRunning,
+      status: item.status // executing | undefined
+    }
+  })
+
   console.log('engine')
 
-}, 20000000)
+}, 2000)

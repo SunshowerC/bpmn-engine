@@ -17,6 +17,11 @@ listener.on('stop', (...args)=>{
   console.log('engine: stop', /* args */)
 })
 
+listener.on('start', (...args)=>{
+  console.log('engine: start', /* args */)
+})
+
+
 listener.on('end', (...args)=>{
   console.log('engine: end', /* args */)
 })
@@ -79,8 +84,17 @@ listener.on('activity.enter', (elementApi, exection:BpmnEngineExecutionApi)=>{
 })
 listener.on('activity.start', (...args)=>{
   const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
+  if(!elementApi.environment['state']) {
+    elementApi.environment['state'] = {}
+  }
+  const key = elementApi.name || `${elementApi.type}_${elementApi.id}`
 
-  console.log(`activity.start:${elementApi.name}, type: ${elementApi.type}`)
+  if(!elementApi.environment['state'][key]) {
+    elementApi.environment['state'][key] = {}
+  }
+  elementApi.environment['state'][key]['startAt'] = new Date()
+  
+  console.log(`activity.start:${key}, type: ${elementApi.type}`)
 })
 listener.on('activity.wait', (...args)=>{
   const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
@@ -90,6 +104,10 @@ listener.on('activity.wait', (...args)=>{
 
 listener.on('activity.end', (...args)=>{
   const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
+  const key = elementApi.name || `${elementApi.type}_${elementApi.id}`
+  
+  elementApi.environment['state'][key]['endAt'] = new Date()
+
   console.log(`activity.end:${elementApi.name}, type: ${elementApi.type}`)
 })
 
