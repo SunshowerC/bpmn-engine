@@ -116,14 +116,14 @@ const engine = Engine({
 
 
 let state;
-listener.once('wait-userTask', () => {
-  state = engine.getState();
+listener.once('wait', async () => {
+  state = await engine.getState();
   fs.writeFileSync('./tmp/some-random-id.json', JSON.stringify(state, null, 2));
   console.log(JSON.stringify(state, null, 2));
 });
 
-listener.once('start', () => {
-  state = engine.getState();
+listener.once('definition.start', async () => {
+  state = await  engine.getState();
   fs.writeFileSync('./tmp/some-random-id.json', JSON.stringify(state, null, 2));
 });
 

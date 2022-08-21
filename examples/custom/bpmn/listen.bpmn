@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI">
+  <process id="theProcess" isExecutable="true">
+    <dataObjectReference id="inputFromUserRef" dataObjectRef="inputFromUser" />
+    <dataObject id="inputFromUser" />
+    <startEvent id="theStart" />
+    <userTask id="userTask">
+      <ioSpecification id="inputSpec">
+        <dataOutput id="userInput" name="sirname" />
+      </ioSpecification>
+      <dataOutputAssociation id="associatedWith">
+        <sourceRef>userInput</sourceRef>
+        <targetRef>inputFromUserRef</targetRef>
+      </dataOutputAssociation>
+    </userTask>
+    <endEvent id="theEnd" />
+    <sequenceFlow id="flow1" sourceRef="theStart" targetRef="userTask" />
+    <sequenceFlow id="flow2" sourceRef="userTask" targetRef="theEnd" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="theProcess">
+      <bpmndi:BPMNShape id="_BPMNShape_theStart" bpmnElement="theStart" isExpanded="false">
+        <dc:Bounds x="52" y="270" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_userTask" bpmnElement="userTask" isExpanded="false">
+        <dc:Bounds x="140" y="248" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="_BPMNConnection_flow1" bpmnElement="flow1">
+        <di:waypoint x="88" y="288" />
+        <di:waypoint x="140" y="288" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_theEnd" bpmnElement="theEnd" isExpanded="false">
+        <dc:Bounds x="260" y="270" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="_BPMNConnection_flow2" bpmnElement="flow2">
+        <di:waypoint x="240" y="288" />
+        <di:waypoint x="260" y="288" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

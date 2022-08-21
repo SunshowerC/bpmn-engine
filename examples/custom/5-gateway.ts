@@ -92,7 +92,7 @@ engine.execute({
   }
 }, (async (err, execution: BpmnEngineExecutionApi) => {
   if (err) throw err;
-  console.log('neig', engine)
+  // console.log('neig', engine)
 
   const state = await engine.getState()
   const [definition] = await engine.getDefinitions()

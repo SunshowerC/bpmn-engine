@@ -173,6 +173,7 @@
 execResult.then((resul:BpmnEngineExecutionApi) => {
   // console.log('execResult', resul)
 })
+
 setInterval(async ()=>{
   
   const state = await engine.getState()

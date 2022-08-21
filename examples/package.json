@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "bent": "^7.3.12",
+    "bpmn-auto-layout": "^0.1.0",
     "bpmn-elements": "^8.1.0",
     "bpmn-engine": "^15.0.0",
     "camunda-bpmn-moddle": "^6.1.2"

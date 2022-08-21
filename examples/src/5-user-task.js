@@ -29,18 +29,37 @@ const listener = new EventEmitter();
 listener.once('wait', (elementApi) => {
 
   console.log('fck')
-  // elementApi.signal({
-  //   sirname: 'von Rosen'
-  // });
+  // setTimeout(()=>{
+  //   elementApi.signal({
+  //     sirname: 'von Rosen'
+  //   });
+  // }, 3500)
+
 });
 
 listener.on('activity.end', (elementApi, engineApi) => {
   if (elementApi.content.output) engineApi.environment.output[elementApi.id] = elementApi.content.output;
 });
 
-engine.execute({
-  listener
-}, (err, execution) => {
-  if (err) throw err;
-  console.log(`User sirname is ${execution.environment.output.task.sirname}`);
-});
+
+(async ()=>{
+
+  const api = await engine.execute({
+    listener
+  }, (err, execution) => {
+    if (err) throw err;
+    console.log(`User sirname is ${execution.environment.output.task.sirname}`);
+  });
+  
+  
+  setTimeout(()=>{
+    api.signal({
+      id:'task',
+      // executionId:'task_833f1a2b10',
+      sirname: 'von Rosen'
+    });
+  }, 7500)
+
+
+  // await sleep(10000)
+})()

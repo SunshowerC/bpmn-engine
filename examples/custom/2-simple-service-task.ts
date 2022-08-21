@@ -10,7 +10,7 @@ const source = `
     <bpmn:startEvent id="Event_1yz7e5b" name="simple-start">
       <bpmn:outgoing>Flow_0ncueus</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="Activity_02g5s5r" name="simple-service" implementation="\${environment.services.getCustomService()}">
+    <bpmn:serviceTask id="Activity_02g5s5r" name="simple-service" implementation="\${environment.services.getCustomService}">
       <bpmn:incoming>Flow_0ncueus</bpmn:incoming>
       <bpmn:outgoing>Flow_0qft1bq</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -73,19 +73,26 @@ const engine = Engine({
   name: 'simple-01',
   source,
   listener: listener,
+  moddleOptions: {
+    camunda: require('camunda-bpmn-moddle/resources/camunda')
+  },
   extensions: {
     // 存储每个节点的输出 存储到 environment.output['node name'] 中
-    saveToEnvironmentOutput(bpmnProcess, context) {
+    saveToEnvironmentOutput(activity:any, context) {
       const environment = (context as any)?.environment
 
-
-      bpmnProcess?.on('end', (api) => {
-        const {name: eleName} = api.content
-        environment.output[eleName || api.id] = api.content.output;
-      });
+      // activity.on('end', (api: any) => {
+      //   environment.output.path = environment.output.path || [];
+      //   environment.output.path.push({
+      //     id: api.id,
+      //     name: api.name,
+      //     output: api.content.output,
+      //   });
+      // });
     }
   }
 })
+ 
 
 engine.execute({
   variables: {
@@ -94,18 +101,28 @@ engine.execute({
     }
   },
   services: {
-    getCustomService: (defaultScope:any)=>{
+    getCustomService: (defaultScope:any, cb)=>{
       const {id, isRootScope, message, name, state, type} = defaultScope.content
-      if (!(type.includes('ServiceTask'))) return;
-      return async (executionContext, callback) => {
+
+      // 方式1：implementation="\${environment.services.getCustomService()}"， 直接执行 cb 返回
+      cb(null, {calResul: 98989})
+
+
+      // 方式2：implementation="\${environment.services.getCustomService}"， 不执行 cb，返回一个 function 
+      // if (!(type.includes('ServiceTask'))) return;
+      // return async (executionContext, callback) => {
         
-        const result = await serviceMap[name]?.(executionContext)
-        console.log('executing', result, defaultScope )
-        callback(null, result);
-      };
+      //   const result = await serviceMap[name]?.(executionContext)
+      //   console.log('executing', 
+      //   // result, defaultScope 
+      //   )
+      //   callback(null, result);
+      // };
     }
   }
 }, ((err, execution: BpmnEngineExecutionApi) => {
   if (err) throw err;
-  console.log(`response: ${execution.name}`, execution.environment.output)
+  console.log(`response: ${execution.name}`, 
+  execution.environment.output
+  )
 }) as any)

@@ -28,6 +28,7 @@ module.exports = {Engine, Execution};
 function Engine(options = {}) {
   if (!(this instanceof Engine)) return new Engine(options);
 
+  // ?? 
   EventEmitter.call(this);
 
   const opts = this.options = {
@@ -262,8 +263,32 @@ Engine.prototype._serializeModdleContext = function serializeModdleContext(moddl
 
 Engine.prototype._getModdleContext = function getModdleContext(source) {
   const bpmnModdle = new BpmnModdle(this.options.moddleOptions);
-  return bpmnModdle.fromXML(Buffer.isBuffer(source) ? source.toString() : source.trim());
+  return bpmnModdle.fromXML(Buffer.isBuffer(source) ? source.toString() : source.trim()).then(d=>{
+    
+  });
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 以下是 执行实例
+
+
 
 function Execution(engine, definitions, options, isRecovered = false) {
   this.name = engine.name;
@@ -311,9 +336,12 @@ Execution.prototype._execute = function execute(executeOptions, callback) {
   this[kStopped] = false;
   this._debug('execute');
 
+  // 绑定各个节点的事件
   this._addConsumerCallbacks(callback);
   const definitionExecutions = this.definitions.reduce((result, definition) => {
+    // 将 定义中的所有 executable process 执行
     if (!definition.getExecutableProcesses().length) return result;
+    // 开始执行的入口
     result.push(definition.run());
     return result;
   }, []);
@@ -340,6 +368,7 @@ Execution.prototype._resume = function resume(resumeOptions, callback) {
   return this;
 };
 
+// 响应结果结果回调
 Execution.prototype._addConsumerCallbacks = function addConsumerCallbacks(callback) {
   if (!callback) return;
 
@@ -350,6 +379,7 @@ Execution.prototype._addConsumerCallbacks = function addConsumerCallbacks(callba
 
   clearConsumers();
 
+  // 监听事件
   broker.subscribeOnce('event', 'engine.stop', () => {
     clearConsumers();
     return callback(null, this);
@@ -399,6 +429,7 @@ Execution.prototype._setup = function setup(setupOptions = {}) {
   for (const definition of this.definitions) {
     if (listener) definition.environment.options.listener = listener;
 
+    // 从 definition.broker 订阅所有的 definition， process， activity，flow 事件
     definition.broker.subscribeTmp('event', 'definition.#', onChildMessage, {noAck: true, consumerTag: '_engine_definition'});
     definition.broker.subscribeTmp('event', 'process.#', onChildMessage, {noAck: true, consumerTag: '_engine_process'});
     definition.broker.subscribeTmp('event', 'activity.#', onChildMessage, {noAck: true, consumerTag: '_engine_activity'});

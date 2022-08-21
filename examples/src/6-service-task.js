@@ -31,7 +31,7 @@ const source = `
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
   <process id="theProcess" isExecutable="true">
   <startEvent id="theStart" />
-  <serviceTask id="serviceTask" implementation="\${environment.services.getRequest}" camunda:resultVariable="serviceResult" />
+  <serviceTask id="serviceTask" implementation="\${environment.services.getRequest}" camunda:resultVariable="serviceResult" camunda:custAb="helow" />
   <endEvent id="theEnd" />
 
   <sequenceFlow id="flow1" sourceRef="theStart" targetRef="serviceTask" />
