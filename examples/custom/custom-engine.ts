@@ -1,4 +1,5 @@
 import { BpmnEngineExecutionApi, Engine } from "bpmn-engine";
+import EventEmitter from "events";
 import { sleep } from "./common-listener";
 
 
@@ -66,50 +67,90 @@ const source = `
 `
 
 let order = 0
+
+const listener = new EventEmitter()
+
+listener.on('activity.start', (...args)=>{
+  const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
+  console.log('s')
+  const {name: eleName, type, inbound, } = elementApi.content
+  const environment = elementApi.environment
+  const curInputData = inbound?.reduce((inBoundResult, item) => {
+    if(!environment.output._activityState?.[item.sourceId]?.output) {
+      return inBoundResult
+    }
+    inBoundResult.push({
+      id: item.sourceId,
+      data: environment.output._activityState?.[item.sourceId]?.output
+    })
+    return inBoundResult
+  }, [])
+
+  environment.output._activityState = environment.output._activityState || {}
+  environment.output._activityState[elementApi.id] = {
+    id: elementApi.id,
+    name: eleName,
+    order: order++,
+    startAt: new Date(),
+    input: curInputData,
+    type
+    // output: api.content.output
+  }
+})
+
+listener.on('activity.end', (...args)=>{
+  const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
+  const environment = elementApi.environment
+
+  environment.output._activityState[elementApi.id]['output'] = elementApi.content.output?.[0]
+  environment.output._activityState[elementApi.id]['endAt'] = new Date()
+  console.log('e')
+})
+
 const engine = Engine({
   source,
   name: 'get state',
-  // listener: listener,
+  listener: listener,
   extensions: {
     // 存储每个节点的输出 存储到 environment.output['node name'] 中
-    saveToEnvironmentOutput(activity, context) {
-      const environment = (context as any)?.environment
+    // saveToEnvironmentOutput(activity, context) {
+    //   const environment = (context as any)?.environment
       
-      activity?.on('start', (api) => {
-        const {name: eleName, type, inbound} = api.content
-        const curInputData = inbound?.reduce((inBoundResult, item) => {
-          if(!environment.activityState?.[item.sourceId]?.output) {
-            return inBoundResult
-          }
-          inBoundResult.push({
-            id: item.sourceId,
-            data: environment.activityState?.[item.sourceId]?.output
-          })
-          return inBoundResult
-        }, [])
+    //   activity?.on('start', (api) => {
+    //     const {name: eleName, type, inbound} = api.content
+    //     const curInputData = inbound?.reduce((inBoundResult, item) => {
+    //       if(!environment.activityState?.[item.sourceId]?.output) {
+    //         return inBoundResult
+    //       }
+    //       inBoundResult.push({
+    //         id: item.sourceId,
+    //         data: environment.activityState?.[item.sourceId]?.output
+    //       })
+    //       return inBoundResult
+    //     }, [])
 
-        environment.activityState = environment.activityState || {}
-        environment.activityState[api.id] = {
-          id: api.id,
-          name: eleName,
-          order: order++,
-          startAt: new Date(),
-          input: curInputData,
-          type
-          // output: api.content.output
-        }
+    //     environment.activityState = environment.activityState || {}
+    //     environment.activityState[api.id] = {
+    //       id: api.id,
+    //       name: eleName,
+    //       order: order++,
+    //       startAt: new Date(),
+    //       input: curInputData,
+    //       type
+    //       // output: api.content.output
+    //     }
 
-        // environment.output[eleName || api.id] = api.content.output;
-      });
+    //     // environment.output[eleName || api.id] = api.content.output;
+    //   });
 
-      activity?.on('end', (api) => {
-        const {name: eleName} = api.content
-        // environment.activityState[eleName || api.id] 
-        // environment.output[eleName || api.id] = api.content.output;
-        environment.activityState[api.id]['output'] = api.content.output?.[0]
-        environment.activityState[api.id]['endAt'] = new Date()
-      });
-    }
+    //   activity?.on('end', (api) => {
+    //     const {name: eleName} = api.content
+    //     // environment.activityState[eleName || api.id] 
+    //     // environment.output[eleName || api.id] = api.content.output;
+    //     environment.activityState[api.id]['output'] = api.content.output?.[0]
+    //     environment.activityState[api.id]['endAt'] = new Date()
+    //   });
+    // }
   }
 });
 
@@ -157,6 +198,7 @@ engine.execute({
 }, (async (err, execution: BpmnEngineExecutionApi) => {
   if (err) throw err;
   
+  const state = await engine.getState()
   const [definition] = await engine.getDefinitions()
   const processes = definition?.getProcesses();
 
