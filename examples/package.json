@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "s": "ts-node --project tsconfig.json execute.ts",
+    "start": "DEBUG=bpmn-engine:* ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "ISC", 
   "dependencies": {
     "bent": "^7.3.12",
     "bpmn-auto-layout": "^0.1.0",

@@ -84,7 +84,7 @@ listener.on('activity.end', (elementApi, engineApi) => {
 
   engine.resume({listener}, async (err, execution)=>{
     const state = await engine.getState()
-    // console.log('ss', state)
+    console.log('ss', state)
   })
   setTimeout(()=>{
     engine.execution.signal({

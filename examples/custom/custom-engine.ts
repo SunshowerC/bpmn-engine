@@ -70,6 +70,8 @@ let order = 0
 
 const listener = new EventEmitter()
 
+
+// 记录节点开始
 listener.on('activity.start', (...args)=>{
   const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
   console.log('s')
@@ -98,14 +100,24 @@ listener.on('activity.start', (...args)=>{
   }
 })
 
+
+// 记录节点结束与结果
 listener.on('activity.end', (...args)=>{
   const [elementApi, exection] = args as [any, BpmnEngineExecutionApi]
   const environment = elementApi.environment
 
   environment.output._activityState[elementApi.id]['output'] = elementApi.content.output?.[0]
   environment.output._activityState[elementApi.id]['endAt'] = new Date()
-  console.log('e')
 })
+
+
+// 遇到 user taks 会进入 wait 状态
+listener.on('wait', async (elementApi) => {
+  const state = await engine.getState()
+  // fs.writeFileSync('./tmp/userTask.json', JSON.stringify(state, null, 2));
+  console.log('fck')
+});
+
 
 const engine = Engine({
   source,
@@ -165,10 +177,23 @@ engine.execute({
     service1: async (defaultScope:any, cb)=>{
       const {id, isRootScope, message, name, state, type} = defaultScope.content
       await sleep(3000)
+
+
+      const engineVariable =  Object.keys(defaultScope.environment.variables).reduce((result, curKey)=>{
+        if(!['content', 'fields', 'properties'].includes(curKey)) {
+          result[curKey] = defaultScope.environment.variables[curKey]
+        }
+        return result
+      }, {} as Record<string ,any>)
       
       // 设置当前运行流程 变量，在后续的流程可访问到
-      defaultScope.environment.assignVariables({
-        projectEntity: 'porjzz'
+      // defaultScope.environment.assignVariables({
+      //   projectEntity: 'porjzz'
+      // })
+
+      engine.environment.assignVariables({
+        projectEntity: 'porjzz',
+        ...engineVariable
       })
 
       cb(null, {
@@ -182,10 +207,25 @@ engine.execute({
       const {id, isRootScope, message, name, state, type} = defaultScope.content
       await sleep(2000)
 
-      defaultScope.environment.assignVariables({
-        projectEntity2: 'service2'
+
+      /** 关键变量取值 */
+      const engineVariable =  Object.keys(defaultScope.environment.variables).reduce((result, curKey)=>{
+        if(!['content', 'fields', 'properties'].includes(curKey)) {
+          result[curKey] = defaultScope.environment.variables[curKey]
+        }
+        return result
+      }, {} as Record<string ,any>)
+
+
+      engine.environment.assignVariables({
+        projectEntity2: 'service2',
+        ...engineVariable
       })
 
+      const allVars = engine.environment.variables
+      const output = defaultScope.environment.output
+      const curActivityId = defaultScope.id
+      /** 关键变量取值 */
 
       cb(null, {
         id,
